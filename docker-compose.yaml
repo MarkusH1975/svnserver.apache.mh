@@ -1,0 +1,38 @@
+version: '3.0'
+#############################
+# Markus Hilsenbeck
+# Feb 2022
+# svnserver with http:// protocol
+# 
+
+services:
+  svnserver:
+    build: 
+      context: ./docker-context/
+      dockerfile: Dockerfile
+      args: 
+        - CACHE_DATE="not_set"
+    image: svnserver.apache:local
+    container_name: svnserver.apache
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    restart: always
+    environment:
+      - ENABLE_APACHE=true
+      - ENABLE_CRON=false
+    ports:
+      # allow access from all hosts, use http
+      - 0.0.0.0:8087:80/tcp
+      # allow access from only from localhost
+      # use https via reverse-proxy 0.0.0.0:8088 -> 127.0.0.1:18088
+      - 127.0.0.1:18088:80/tcp
+    volumes:
+      #- /etc/timezone:/etc/timezone:ro   # for others
+      - /etc/TZ:/etc/timezone:ro          # for DSM7
+      - /etc/localtime:/etc/localtime:ro
+      - ./volume/svnadmin:/volume/svnadmin:rw
+      - ./volume/svnconf:/volume/svnconf:rw
+      - ./volume/svnrepo:/volume/svnrepo:rw
+
+    # use default bride network 
+    network_mode: bridge
